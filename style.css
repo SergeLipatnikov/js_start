@@ -4,6 +4,7 @@
 }
 h1{
 	color: rgb(0, 0, 0);
+	width: 100%;
 	margin: 0 auto;
 	display: block;
 	text-align: center;
@@ -11,31 +12,33 @@ h1{
 }
 h3{
 	color: rgb(0, 0, 0);
-	margin: 20px auto;
 	display: block;
 	padding: 20px;
+	margin: 20px;
 	border: 1px dotted rgb(0, 0, 0);
 	border-radius: 5px;
 	font-weight: 200;
-	width: 800px;
+	width: 100%;
 	background: rgb(197, 178, 178);
 }
 
 #wrapper{
 	display: flex;
+	width: 800px;
 	margin: 0 auto;
 	flex-direction: column;
 	align-items: center;
-	padding-bottom: 30px;
+	position: relative;
 }
 #catalog{
 	display: flex;
 	min-height: 100px;
-	width: 800px;
+	width: 100%;
 	padding: 20px;
 	border: 1px dotted rgb(0, 0, 0);
 	border-radius: 5px;
 	flex-direction: column;
+	margin-bottom: 100px;
 }
 .prod_item{
 	display: flex;
@@ -51,6 +54,9 @@ h3{
 .image{
 	height: 100%;
 }
+.image:hover{
+	cursor: zoom-in; 
+}
 
 .description{
 	height: 100%;
@@ -60,7 +66,9 @@ h3{
 	font-size: 2em;
 	padding: 10px 0;
 }
-
+.price{
+	color: darkslateblue;
+}
 .price span{
 	font-size: 3em;
 }
@@ -82,16 +90,55 @@ h3{
     justify-content: inherit;
 	margin: 10px;
 }
-.sale a{
+.button{
 	display: block;
 	width: 100%;
 	background: lightblue;
 	padding: 10px;
 	text-align: center;
-	text-decoration: none;
-	color: black;
 	font-size: larger;
+	cursor: pointer;
 }
-.sale a:hover{
+.button:hover{
 	background: #4a93ab;
+}
+
+footer{
+	display: flex;
+	background: aqua;
+	position: fixed;
+	bottom: 0px;
+	height: 40px;
+	width: 100%;
+	margin-top: 30px;
+	padding: 20px;
+	align-items: center;
+	justify-content: center;
+}
+.total{
+	display: flex;
+	width: 800px;
+	font-size: 2em;
+	justify-content: space-between;
+	align-items: center;
+}
+.buy{
+	color: red;
+	display: block;
+	padding: 3px 10px;
+	border: 2px solid red;
+	text-decoration: none;
+}
+#popup{
+	position: fixed;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    background: rgba(100, 113, 113, 0.82);
+    display: none;
+    height: 100vh;
+    cursor: zoom-out;
+}
+.scale{
+	transform: scale(2);
 }
