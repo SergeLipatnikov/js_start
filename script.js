@@ -1,134 +1,230 @@
-// создаем объект каталога
-function Item(product, image, description, price, discount=0) {
-    this.product = product;
-    this.image = `img/${image}.png`;
-    this.description = description;
-    this.price = price;
-    this.discount = discount
-}
+var FIELD_SIZE_X = 20;
+var FIELD_SIZE_Y = 20;
+var SNAKE_SPEED = 200; 
+var snake = [];
+var direction = 'y+'; 
 
-let catalodList = []
+var gameIsRunning = false;
+var snake_timer;
+var food_timer;
+var score = 0;
+var currentScore;
 
-catalodList.push(new Item('Lloyd', 'Image1', 'Make a BIG impression', 95, 20));
-catalodList.push(new Item('Djay', 'Image2', 'Has a removable, fabric robe', 17));
-catalodList.push(new Item('Zein', 'Image3', 'Individual sets of building', 15));
-catalodList.push(new Item('Kai', 'Image4', 'Components are dropped', 32, 10));
-catalodList.push(new Item('Master Voo', 'Image5', 'Models carry brick-built', 22));
-catalodList.push(new Item('Mech', 'Image6', 'The perfect building toys for kids', 22));
+    function init() {
+        prepareGameField();
+        var wrap = document.getElementsByClassName('wrap')[0];
+        wrap.style.width = '400px';
+        document.getElementById('snake-start').addEventListener('click', startGame);
+        document.getElementById('snake-renew').addEventListener('click', refreshGame);
+        addEventListener('keydown', changeDirection);
+    }
 
-// создаем отображение каталога
-function drowItems() {
-    catalodList.forEach(function (item, i) {
-        drowItem(item, i);
-    })
-}
+    function prepareGameField() { 
+        currentScore = document.querySelector('h3');
+        currentScore.classList.add('score-string');
 
-const $catalog = document.querySelector('#catalog');
-function drowItem(item, id) {
-    $catalog.insertAdjacentHTML('beforeend', 
-    `<div id="item-${id}" class="prod_item">
-        <div class="item">
-            <div class="image"><img src="${item.image}"></div>
-            <div class="description"><h4>${item.product}</h4>${item.description}
-                <div class="price">Цена: 
-                    <span>${item.price}</span> руб.
-                </div>
-            </div>
-        </div>
-        <div class="sale">
-            <span class='offer ${item.discount > 0 ? 'show' : ''}'>Скидка: ${item.discount}%</span>
-            <div data-id="${id}" class="button">В корзину</div>
-        </div>
-    </div>`);
-}
-drowItems(catalodList);
+        var game_table = document.createElement('table');
+        game_table.setAttribute('class', 'game-table');
+
+        for (var i = 0; i < FIELD_SIZE_X; i++) {
+        
+            var row = document.createElement('tr');
+            row.className = 'game-table-row row-' + i;
+
+            for (var j = 0; j < FIELD_SIZE_Y; j++) {
+                
+                var cell = document.createElement('td');
+                cell.className = 'game-table-cell cell-' + i + '-' + j;
+
+                row.appendChild(cell);
+            }
+            game_table.appendChild(row);
+        }
+        document.getElementById('snake-field').appendChild(game_table);
+    }
+
+    function startGame() {
+        gameIsRunning = true;
+        respawn();
+        snake_timer = setInterval(move, SNAKE_SPEED);
+        setTimeout(createFood, 1000);
+        setTimeout(createObstacles, 5000);
+    }
+
+    function respawn() {
+        var start_coord_x = Math.floor(FIELD_SIZE_X / 2);
+        var start_coord_y = Math.floor(FIELD_SIZE_Y / 2);
+
+        var snake_tail = document.getElementsByClassName('cell-' + start_coord_y + '-' + start_coord_x)[0];
+        snake_tail.setAttribute('class', snake_tail.getAttribute('class') + ' snake-unit');
+        
+        var snake_head = document.getElementsByClassName('cell-' + (start_coord_y - 1) + '-' + start_coord_x)[0];
+        snake_head.setAttribute('class', snake_head.getAttribute('class') + ' snake-unit');
+
+        snake.push(snake_tail);
+        snake.push(snake_head);
+    }
 
 
-// ----------- создаем объект корзины -----------
-let shoppingCart = [];
+    function move() {
+        var snake_head_classes = snake[snake.length - 1].getAttribute('class').split(' ');
+        var new_unit;
+        var snake_coords = snake_head_classes[1].split('-');
+        var coord_y = parseInt(snake_coords[1]);
+        var coord_x = parseInt(snake_coords[2]);
 
-// ----------- руками для теста напихаем -----------
-// shoppingCart.push(new basketItem('product_name_1', 10, 10));
-// shoppingCart.push(new basketItem('product_name_2', 5));
-// shoppingCart.push(new basketItem('product_name_3', 15));
-// -------------------------------------------------
+        if (direction == 'x-') {
+            new_unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (coord_x - 1))[0];
+        }
+        else if (direction == 'x+') {
+            new_unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (coord_x + 1))[0];
+        }
+        else if (direction == 'y+') {
+            new_unit = document.getElementsByClassName('cell-' + (coord_y - 1) + '-' + (coord_x))[0];
+        }
+        else if (direction == 'y-') {
+            new_unit = document.getElementsByClassName('cell-' + (coord_y + 1) + '-' + (coord_x))[0];
+        }
 
-let emptyBasket = 'Ваша корзина пуста.';
+        if (new_unit == undefined && direction == 'x-') {
+            new_unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (FIELD_SIZE_X - 1))[0];
+        } else if (new_unit == undefined && direction == 'x+') {
+            new_unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (0))[0];
+        } else if (new_unit == undefined && direction == 'y+') {
+            new_unit = document.getElementsByClassName('cell-' + (FIELD_SIZE_Y - 1) + '-' + (coord_x))[0];
+        } else if (new_unit == undefined && direction == 'y-') {
+            new_unit = document.getElementsByClassName('cell-' + (0) + '-' + (coord_x))[0];
+        }
 
-function basketItem(product, price, discount=0) {
-    this.product = product;
-    this.price = price;
-    this.discount = discount;
-    this.finalPrice = function() {
-        if (this.discount != 0) {
-            return this.price - this.price*this.discount/100;
-        } else {
-            return this.price;
+        if (!isSnakeUnit(new_unit) && new_unit !== undefined && !haveObstacle(new_unit)) {
+            new_unit.setAttribute('class', new_unit.getAttribute('class') + ' snake-unit');
+            snake.push(new_unit);
+
+            if (!haveFood(new_unit)) {
+                var removed = snake.splice(0, 1)[0];
+                var classes = removed.getAttribute('class').split(' ');
+                removed.setAttribute('class', classes[0] + ' ' + classes[1]);
+            }
+        }
+        else {
+            finishTheGame();
         }
     }
-}
 
-// получаем итоговую сумму
-function totalSumm(shoppingCart) {
-    return shoppingCart.reduce(function (acc, price) {
-        return acc + price.finalPrice();
-    }, 0);
-}
 
-// так по приколу, правильные окончания
-function correctEnding (){
-    let corEnd = '';
-    if (shoppingCart.length == 1) {
-        corEnd = '';
-    } else if (shoppingCart.length > 1 && shoppingCart.length <= 4) {
-        corEnd = 'а';
-    } else {
-        corEnd = 'ов';
+    function isSnakeUnit(unit) {
+        var check = false;
+
+        if (snake.includes(unit)) {
+            check = true;
+        }
+        return check;
     }
-    return corEnd;
-}
 
-// создаем отображение корзины
-function drowTotal (shoppingCart) {
-    const $basket = document.querySelector('#basket');
-    $basket.textContent = '';
+    function haveFood(unit) {
+        var check = false;
+        var unit_classes = unit.getAttribute('class').split(' ');
 
-    if (shoppingCart == 0) {
-        $basket.insertAdjacentHTML('beforeend', `<div class="total">${emptyBasket}</div>`);
-    } else {
-        $basket.insertAdjacentHTML('beforeend', 
-        `<div class="total">
-            <p>В корзине: ${shoppingCart.length} 
-            товар${correctEnding()} на сумму ${totalSumm(shoppingCart)} рублей.</p>
-            <a class="buy" href="#">Купить</a>
-        </div>`);
+        if (unit_classes.includes('food-unit')) {
+            check = true;
+            createFood();
+            score++;
+            currentScore.innerHTML = 'Ваш текущий счет: '  + score;
+        }
+        return check;
     }
-}
-drowTotal(shoppingCart);
 
-// событие - добавление объекта в корзину
-$catalog.addEventListener('click', function (e) {
-    if (e.target.className ==='button' ) {
-        const id = Number(e.target.getAttribute('data-id'));
-        const choice = catalodList[id];
-        shoppingCart.push(new basketItem(choice.product, choice.price, choice.discount));
 
-        drowTotal(shoppingCart);
-    } 
-});
- 
-// работаем с #popup
-const $popup = document.querySelector('#popup');
+    function haveObstacle(unit) {
+        var check = false;
+        var unit_classes = unit.getAttribute('class').split(' ');
 
-$popup.addEventListener('click', function(e) {
-    $popup.style.display = 'none';
-});
-
- $catalog.addEventListener('click', function(e) {
-    if( e.target.tagName === 'IMG' ) {
-        $popup.textContent = '';
-        $popup.style.display = 'flex';
-        $popup.insertAdjacentHTML('beforeend',
-            `<img src="${e.target.getAttribute('src')}" class="scale">`);
+        if (unit_classes.includes('obstacle-unit')) {
+            check = true;
+            createObstacles();
+        }
+        return check;
     }
-});
+
+    function createFood() {
+        var foodCreated = false;
+
+        while (!foodCreated) {
+            var food_x = Math.floor(Math.random() * FIELD_SIZE_X);
+            var food_y = Math.floor(Math.random() * FIELD_SIZE_Y);
+            var food_cell = document.getElementsByClassName('cell-' + food_y + '-' + food_x)[0];
+            var food_cell_classes = food_cell.getAttribute('class').split(' ');
+
+            if (!food_cell_classes.includes('snake-unit')) {
+                var classes = '';
+
+                for (var i = 0; i < food_cell_classes.length; i++) {
+                    classes += food_cell_classes[i] + ' ';
+                }
+
+                food_cell.setAttribute('class', classes + 'food-unit');
+                foodCreated = true;
+            }
+        }
+        
+    }
+    
+    function createObstacles() {
+        var obstacleCreated = false;
+
+        while (!obstacleCreated) {
+            var obstacle_x = Math.floor(Math.random() * FIELD_SIZE_X);
+            var obstacle_y = Math.floor(Math.random() * FIELD_SIZE_Y);
+            var obstacle_cell = document.getElementsByClassName('cell-' + obstacle_y + '-' + obstacle_x)[0];
+            var obstacle_cell_classes = obstacle_cell.getAttribute('class').split(' ');
+
+            if (!obstacle_cell_classes.includes('snake-unit') || !obstacle_cell_classes.includes('food-unit') ) {
+                var obstacleClasses = '';
+
+                for (var i = 0; i < obstacle_cell_classes.length; i++) {
+                    obstacleClasses += obstacle_cell_classes[i] + ' ';
+                }
+
+                obstacle_cell.setAttribute('class', obstacleClasses + 'obstacle-unit');
+                obstacleCreated = true;
+            }
+        }
+    }
+
+    function changeDirection(e) {
+        console.log(e);
+        switch (e.keyCode) {
+            case 37:
+                if (direction != 'x+') {
+                    direction = 'x-'
+                }
+                break;
+            case 38:
+                if (direction != 'y-') {
+                    direction = 'y+'
+                }
+                break;
+            case 39:
+                if (direction != 'x-') {
+                    direction = 'x+'
+                }
+                break;
+            case 40:
+                if (direction != 'y+') { 
+                direction = 'y-'
+                }
+                break;
+        }
+    }
+
+    function finishTheGame() {
+        gameIsRunning = false;
+        clearInterval(snake_timer);
+        alert('Вы проиграли! Ваш результат: ' + score.toString());
+    }
+
+    function refreshGame() {
+        location.reload();
+    }
+
+    window.onload = init;
